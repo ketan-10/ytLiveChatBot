@@ -1,4 +1,6 @@
 # References
+[GO](https://www.youtube.com/watch?v=YS4e4q9oBaU)
+
 [Youtube API examples](https://developers.google.com/youtube/v3/code_samples/go)
 
 [Google OAuth2](https://developers.google.com/identity/protocols/oauth2/native-app)
