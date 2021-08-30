@@ -1,6 +1,8 @@
 # References
 [GO](https://www.youtube.com/watch?v=YS4e4q9oBaU)
 
+[Are there any security concerns with sharing the client secrets of a Google API project?](https://stackoverflow.com/questions/62315535/are-there-any-security-concerns-with-sharing-the-client-secrets-of-a-google-api)
+
 [Youtube API examples](https://developers.google.com/youtube/v3/code_samples/go)
 
 [Google OAuth2](https://developers.google.com/identity/protocols/oauth2/native-app)
