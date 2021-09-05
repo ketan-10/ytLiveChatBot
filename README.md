@@ -13,6 +13,8 @@
 
 [Youtube API path](https://stackoverflow.com/questions/57263074/cant-get-live-chat-from-stream-i-do-not-own)
 
+[Why need Authorization-code](https://stackoverflow.com/questions/16321455/what-is-the-difference-between-the-oauth-authorization-code-and-implicit-workflo)
+
 `go run *go`
 
 # Try Out Development Containers: Go
