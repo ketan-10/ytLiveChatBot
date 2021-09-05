@@ -11,7 +11,7 @@
 
 [Flutter Example Video 2](https://www.youtube.com/watch?v=nUOoqSOJId0)
 
-[API path](https://stackoverflow.com/questions/57263074/cant-get-live-chat-from-stream-i-do-not-own)
+[Youtube API path](https://stackoverflow.com/questions/57263074/cant-get-live-chat-from-stream-i-do-not-own)
 
 `go run *go`
 
