@@ -1,11 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"os"
+	"regexp"
+	"strings"
 	"sync"
 	"time"
-	"os"
+
+	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 )
 
@@ -40,59 +45,148 @@ func getLiveChatsFromChatId(service *youtube.Service, chatId string) (*youtube.L
 	return response, nil
 }
 
-var wg = sync.WaitGroup{}
+func getLattestMessageChannel(service *youtube.Service, chatId string) <-chan string {
 
-func getLattestMessageChannel(service *youtube.Service, chatId string, messageChannel chan<- string) {
-
+	messageChannel := make(chan string)
 	const extraPercent float64 = 0.5
 
-	messageContainer := make(map[string]bool)
-	defer close(messageChannel)
+	// https://levelup.gitconnected.com/use-go-channels-as-promises-and-async-await-ee62d93078ec
+	go func(chatId string) {
+		defer close(messageChannel)
 
-	for {
-		response, err := getLiveChatsFromChatId(service, chatId)
-		if err != nil {
-			break
-		}
+		messageContainer := make(map[string]bool)
 
-		for _, item := range response.Items {
-			if val := messageContainer[item.Id]; !val {
-				messageContainer[item.Id] = true
-				messageChannel <- item.Snippet.DisplayMessage
+		for {
+			response, err := getLiveChatsFromChatId(service, chatId)
+			if err != nil {
+				break
 			}
-		}
 
-		time.Sleep(time.Millisecond * time.Duration((float64(response.PollingIntervalMillis) * (1 + extraPercent))))
+			for _, item := range response.Items {
+				if val := messageContainer[item.Id]; !val {
+					messageContainer[item.Id] = true
+					messageChannel <- item.Snippet.DisplayMessage
+					// messageChannel <- item.Snippet.TextMessageDetails.MessageText
+				}
+			}
+
+			time.Sleep(time.Millisecond * time.Duration((float64(response.PollingIntervalMillis) * (1 + extraPercent))))
+		}
+	}(chatId)
+	return messageChannel
+
+}
+
+func getChatIdFromUrl(url string, service *youtube.Service) string {
+	videoId, _ := getVideoIdFromUrl(service, url)
+
+	liveChatId, _ := getLiveChatIdFromVideoId(service, videoId)
+
+	return liveChatId
+
+}
+
+func readAll(urls []string, service *youtube.Service) []string {
+
+	responseChannel := make(chan string)
+	defer close(responseChannel)
+
+	for _, url := range urls {
+		go func(url string) {
+			chatId := getChatIdFromUrl(url, service)
+			responseChannel <- chatId
+		}(url)
 	}
 
-	wg.Done()
+	var chatIds []string
+	for range urls {
+		chatIds = append(chatIds, <-responseChannel)
+	}
+
+	return chatIds
+}
+
+// writers
+
+func sendLiveChatFromChatId(service *youtube.Service, chatId string, message string) (*youtube.LiveChatMessage, error) {
+	call := service.LiveChatMessages.Insert([]string{"snippet"}, &youtube.LiveChatMessage{
+		Snippet: &youtube.LiveChatMessageSnippet{
+			LiveChatId: chatId,
+			Type:       "textMessageEvent",
+			TextMessageDetails: &youtube.LiveChatTextMessageDetails{
+				MessageText: message,
+			},
+		},
+	})
+	response, err := call.Do()
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+func sendMessageChannel(service *youtube.Service, chatId string) chan<- string {
+	messageChannel := make(chan string)
+
+	go func(chatId string) {
+		for newChat := range messageChannel {
+			sendLiveChatFromChatId(service, chatId, newChat)
+		}
+	}(chatId)
+
+	return messageChannel
 }
 
 func main() {
 
-	isNew := false;
-	if len(os.Args) > 1  && os.Args[1] == "new"{ 
-		  isNew = true;
+	isNew := false
+	if len(os.Args) > 1 && os.Args[1] == "new" {
+		isNew = true
 	}
 
-	client := getClient(youtube.YoutubeReadonlyScope, isNew)
-	service, err := youtube.New(client)
+	client := getClient(isNew, youtube.YoutubeReadonlyScope, youtube.YoutubeScope, youtube.YoutubeForceSslScope)
+	// client := getClient(, isNew)
+	service, err := youtube.NewService(context.Background(), option.WithHTTPClient(client))
 
 	if err != nil {
 		log.Fatalf("Error creating YouTube client: %v", err)
 	}
 
-	videoId, _ := getVideoIdFromUrl(service, "https://youtu.be/5qap5aO4i9A")
+	// liveChatId := readable(, service)
+	liveChatIds := readAll([]string{"https://youtu.be/5qap5aO4i9A"}, service)
 
-	liveChatId, _ := getLiveChatIdFromVideoId(service, videoId)
+	chatReaders := make(map[string]<-chan string)
+	chatWriters := make(map[string]chan<- string)
 
-	messageChannel := make(chan string)
-
-	wg.Add(1)
-	go getLattestMessageChannel(service, liveChatId, messageChannel)
-
-	for i := range messageChannel {
-		fmt.Println(i)
+	for _, chatId := range liveChatIds {
+		chatReaders[chatId] = getLattestMessageChannel(service, chatId)
+		chatWriters[chatId] = sendMessageChannel(service, chatId)
 	}
+
+	var wg = sync.WaitGroup{}
+	const repeat string = "/r "
+	for _, valueReader := range chatReaders {
+		wg.Add(1)
+		go func(valueReader <-chan string) {
+			defer wg.Done()
+			for newMessage := range valueReader {
+				if !strings.HasPrefix(newMessage, repeat) {
+					continue
+				}
+				fmt.Println(newMessage)
+				re := regexp.MustCompile("^(" + repeat + ")*")
+				newMessage = re.ReplaceAllString(newMessage, "")
+				fmt.Println("after: ", newMessage)
+
+				for _, valueWriter := range chatWriters {
+					// if keyWriter != keyReader {
+					valueWriter <- newMessage
+					// }
+				}
+			}
+
+		}(valueReader)
+	}
+
 	wg.Wait()
 }
