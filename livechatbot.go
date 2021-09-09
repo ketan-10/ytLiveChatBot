@@ -22,14 +22,14 @@ type LiveChatBot struct {
 
 func NewLiveChatBot(input *LiveChatBotInput) *LiveChatBot {
 
-	client := getClient(input.refetchCache, youtube.YoutubeReadonlyScope, youtube.YoutubeScope, youtube.YoutubeForceSslScope)
+	client := getClient(input.RefetchCache, youtube.YoutubeReadonlyScope, youtube.YoutubeScope, youtube.YoutubeForceSslScope)
 	service, err := youtube.NewService(context.Background(), option.WithHTTPClient(client))
 
 	if err != nil {
 		log.Fatalf("Error creating YouTube client: %v", err)
 	}
 
-	liveChatIds := fetchChatIds(input.urls, service)
+	liveChatIds := fetchChatIds(input.Urls, service)
 
 	chatReaders := make(map[string]<-chan *youtube.LiveChatMessage)
 	chatWriters := make(map[string]chan<- string)
@@ -39,9 +39,9 @@ func NewLiveChatBot(input *LiveChatBotInput) *LiveChatBot {
 	}
 
 	return &LiveChatBot{
-		liveChatIds: liveChatIds,
-		chatReaders: chatReaders,
-		chatWriters: chatWriters,
+		LiveChatIds: liveChatIds,
+		ChatReaders: chatReaders,
+		ChatWriters: chatWriters,
 	}
 }
 
