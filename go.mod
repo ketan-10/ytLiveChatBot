@@ -1,7 +1,6 @@
 module github.com/ketan-10/ytLiveChatBot
 
-go 1.17
-
+go 1.170
 
 require (
 	golang.org/x/net v0.0.0-20210903162142-ad29c8ab022f
