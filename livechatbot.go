@@ -10,14 +10,14 @@ import (
 )
 
 type LiveChatBotInput struct {
-	urls         []string
-	refetchCache bool
+	Urls         []string
+	RefetchCache bool
 }
 
 type LiveChatBot struct {
-	liveChatIds []string
-	chatReaders map[string]<-chan *youtube.LiveChatMessage
-	chatWriters map[string]chan<- string
+	LiveChatIds []string
+	ChatReaders map[string]<-chan *youtube.LiveChatMessage
+	ChatWriters map[string]chan<- string
 }
 
 func NewLiveChatBot(input *LiveChatBotInput) *LiveChatBot {
