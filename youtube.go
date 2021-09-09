@@ -1,6 +1,6 @@
 // https://developers.google.com/youtube/v3/code_samples/go
 
-package main
+package ytbot
 
 import (
 	"encoding/json"
