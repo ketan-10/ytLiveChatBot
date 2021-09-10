@@ -60,6 +60,28 @@ chatBot := ytbot.NewLiveChatBot(&ytbot.LiveChatBotInput{
 ```
 
 #### Examples
+1) Read live chats from a single live-stream
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/ketan-10/ytLiveChatBot"
+)
+
+func main() {
+	chatBot := ytbot.NewLiveChatBot(&ytbot.LiveChatBotInput{
+		Urls: []string{"5qap5aO4i9A"},
+	})
+	chatReader := chatBot.ChatReaders["5qap5aO4i9A"]
+
+	for newChat := range chatReader {
+		fmt.Println(newChat.Snippet.DisplayMessage)
+	}
+}
+
+```
+
 1) Read from console and write directly to youtube live-stream chat
 ```go
 package main
@@ -67,12 +89,8 @@ package main
 import (
 	"bufio"
 	"os"
-	"sync"
-
 	"github.com/ketan-10/ytLiveChatBot"
 )
-
-var wg = sync.WaitGroup{}
 
 func main() {
 	chatBot := ytbot.NewLiveChatBot(&ytbot.LiveChatBotInput{
@@ -81,18 +99,12 @@ func main() {
 	chatWriter := chatBot.ChatWriters["5qap5aO4i9A"]
 
 	scanner := bufio.NewScanner(os.Stdin)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for {
-			if scanner.Scan() {
-				newChat := scanner.Text()
-				chatWriter <- newChat
-			}
+	for {
+		if scanner.Scan() {
+			newChat := scanner.Text()
+			chatWriter <- newChat
 		}
-	}()
-
-	wg.Wait()
+	}
 }
 
 ```
