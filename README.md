@@ -37,8 +37,10 @@ var chatBot *ytbot.LiveChatBot = ytbot.NewLiveChatBot(&ytbot.LiveChatBotInput{
 - `LiveChatBot` have `ChatReaders` and `ChatWriters` which are Maps having `key` of youtube-url and value as respective chat reader or writer channel
 
 ```go
-var chatReaders map[string]<-chan *youtube.LiveChatMessage = chatBot.ChatReaders
-var chatWriters map[string]chan<- string = chatBot.ChatWriters
+type LiveChatBot struct {
+	ChatReaders map[string]<-chan *youtube.LiveChatMessage
+	ChatWriters map[string]chan<- string
+}
 ```
 
 - `NewLiveChatBot` func will initiate oauth flow, it will print the google oauth url in console where user has open the url in browser and grant youtube Access.  
