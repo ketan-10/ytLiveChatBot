@@ -10,7 +10,7 @@ But can also be used for a single live-stream
 - Abstracts youtube API Oauth logic 
 - converts youtube live-stream chat in easily manageable readable and writable go channels
 - `ChatReader` channel will receive incoming chat-messages
-- Anything written on `ChatWriter` channel will be   
+- Anything written on `ChatWriter` channel will be sent directly to youtube stream
 
 ## Setup
 
