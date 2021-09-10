@@ -21,7 +21,7 @@ type LiveChatBot struct {
 
 func NewLiveChatBot(input *LiveChatBotInput) *LiveChatBot {
 
-	client := getClient(input.RefetchCache, youtube.YoutubeReadonlyScope, youtube.YoutubeScope, youtube.YoutubeForceSslScope)
+	client := getClient(input.RefetchCache, youtube.YoutubeScope) // youtube.YoutubeReadonlyScope for readonly access
 	service, err := youtube.NewService(context.Background(), option.WithHTTPClient(client))
 
 	if err != nil {
@@ -59,6 +59,7 @@ func readChat(service *youtube.Service, chatId string) <-chan *youtube.LiveChatM
 			call := service.LiveChatMessages.List(chatId, []string{"snippet"})
 			response, err := call.Do()
 			if err != nil {
+				log.Fatalf("Error getting live chat messages: %v", err)
 				break
 			}
 
@@ -92,6 +93,7 @@ func writeChat(service *youtube.Service, chatId string) chan<- string {
 			})
 			_, err := call.Do()
 			if err != nil {
+				log.Fatalf("Error sending message: %v", err)
 				break
 			}
 		}

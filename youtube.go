@@ -149,7 +149,6 @@ func getTokenFromPrompt(config *oauth2.Config, authURL string) (*oauth2.Token, e
 	if _, err := fmt.Scan(&code); err != nil {
 		log.Fatalf("Unable to read authorization code %v", err)
 	}
-	fmt.Println(authURL)
 	return exchangeToken(config, code)
 }
 
