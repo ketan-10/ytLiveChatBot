@@ -15,7 +15,6 @@ type LiveChatBotInput struct {
 }
 
 type LiveChatBot struct {
-	LiveChatIds []string
 	ChatReaders map[string]<-chan *youtube.LiveChatMessage
 	ChatWriters map[string]chan<- string
 }
@@ -33,13 +32,12 @@ func NewLiveChatBot(input *LiveChatBotInput) *LiveChatBot {
 
 	chatReaders := make(map[string]<-chan *youtube.LiveChatMessage)
 	chatWriters := make(map[string]chan<- string)
-	for _, chatId := range liveChatIds {
-		chatReaders[chatId] = readChat(service, chatId)
-		chatWriters[chatId] = writeChat(service, chatId)
+	for url, chatId := range liveChatIds {
+		chatReaders[url] = readChat(service, chatId)
+		chatWriters[url] = writeChat(service, chatId)
 	}
 
 	return &LiveChatBot{
-		LiveChatIds: liveChatIds,
 		ChatReaders: chatReaders,
 		ChatWriters: chatWriters,
 	}
@@ -102,7 +100,7 @@ func writeChat(service *youtube.Service, chatId string) chan<- string {
 	return messageChannel
 }
 
-func fetchChatIds(urls []string, service *youtube.Service) []string {
+func fetchChatIds(urls []string, service *youtube.Service) map[string]string {
 
 	responseChannel := make(chan string)
 	defer close(responseChannel)
@@ -125,9 +123,10 @@ func fetchChatIds(urls []string, service *youtube.Service) []string {
 	}
 
 	// wait for all responses
-	var chatIds []string
-	for range urls {
-		chatIds = append(chatIds, <-responseChannel)
+	chatIds := make(map[string]string) 
+	for _,url := range urls {
+		// chatIds = append(chatIds, <-responseChannel)
+		chatIds[url] = <-responseChannel
 	}
 
 	return chatIds

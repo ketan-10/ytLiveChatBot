@@ -4,8 +4,8 @@ package ytbot
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -54,7 +54,6 @@ func getClient(isNew bool, scope ...string) *http.Client {
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
-	fmt.Println("B: ", b) // bytes , TODO remove
 
 	// If modifying the scope, delete your previously saved credentials
 	// at ~/.credentials/youtube-go.json
@@ -62,8 +61,6 @@ func getClient(isNew bool, scope ...string) *http.Client {
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
-
-	fmt.Println("Config: ", config) // TODO
 
 	// Use a redirect URI like this for a web app. The redirect URI must be a
 	// valid one for your OAuth2 credentials.
@@ -75,7 +72,6 @@ func getClient(isNew bool, scope ...string) *http.Client {
 	if err != nil {
 		log.Fatalf("Unable to get path to cached credential file. %v", err)
 	}
-	fmt.Println("cacheFile Location: ", cacheFile)
 
 	tok, err := tokenFromFile(cacheFile)
 	if err != nil || isNew {
