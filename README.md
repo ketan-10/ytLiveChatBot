@@ -82,7 +82,7 @@ func main() {
 
 ```
 
-1) Read from console and write directly to youtube live-stream chat
+2) Read from console and write directly to youtube live-stream chat
 ```go
 package main
 
@@ -108,7 +108,7 @@ func main() {
 }
 
 ```
-2) Read multiple youtube live-stream chat and print live result.
+3) Read multiple youtube live-stream chat and print live result.
 ```go
 package main
 
@@ -145,7 +145,7 @@ func readChannel(valueReader <-chan *youtube.LiveChatMessage, url string) {
 
 ```
 
-3) If chat-message have prefix `/a ` send the message to all other live-streams
+4) If chat-message have prefix `/a ` send the message to all other live-streams
 ```go
 package main
 
