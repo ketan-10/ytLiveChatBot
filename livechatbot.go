@@ -3,6 +3,7 @@ package ytbot
 import (
 	"context"
 	"log"
+	"fmt"
 	"time"
 
 	"google.golang.org/api/option"
@@ -59,7 +60,7 @@ func readChat(service *youtube.Service, chatId string) <-chan *youtube.LiveChatM
 			call := service.LiveChatMessages.List(chatId, []string{"snippet"})
 			response, err := call.Do()
 			if err != nil {
-				log.Fatalf("Error getting live chat messages: %v", err)
+				fmt.Println("Closing Channel: ",chatId," Error getting live chat messages:", err)
 				break
 			}
 
