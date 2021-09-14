@@ -104,9 +104,17 @@ func writeChat(service *youtube.Service, chatId string) chan<- string {
 	return messageChannel
 }
 
-func fetchChatIds(urls []string, service *youtube.Service) map[string]string {
 
-	responseChannel := make(chan string)
+// parallely fetch chatIds from urls
+// alternate solution : https://stackoverflow.com/questions/40809504/idiomatic-goroutine-termination-and-error-handling 
+func fetchChatIds(urls []string, service *youtube.Service) map[string]string {
+	
+	type job struct {
+    url string
+    chatId string
+	}
+
+	responseChannel := make(chan job)
 	defer close(responseChannel)
 
 	// parallelize the requests
@@ -122,15 +130,15 @@ func fetchChatIds(urls []string, service *youtube.Service) map[string]string {
 			if cidErr != nil {
 				log.Fatalf("Error getting live chat id: %v", cidErr)
 			}
-			responseChannel <- cidRes.Items[0].LiveStreamingDetails.ActiveLiveChatId
+			responseChannel <- job{url, cidRes.Items[0].LiveStreamingDetails.ActiveLiveChatId}
 		}(url)
 	}
 
 	// wait for all responses
 	chatIds := make(map[string]string)
-	for _, url := range urls {
-		// chatIds = append(chatIds, <-responseChannel)
-		chatIds[url] = <-responseChannel
+	for range urls {
+		j := <-responseChannel
+		chatIds[j.url] = j.chatId;
 	}
 
 	return chatIds
