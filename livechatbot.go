@@ -57,7 +57,7 @@ func readChat(service *youtube.Service, chatId string) <-chan *youtube.LiveChatM
 
 		for {
 			// get live chats from chatId
-			call := service.LiveChatMessages.List(chatId, []string{"snippet"})
+			call := service.LiveChatMessages.List(chatId, []string{"snippet", "authorDetails"})
 			response, err := call.Do()
 			if err != nil {
 				fmt.Println("Closing Channel: ", chatId, " Error getting live chat messages:", err)
