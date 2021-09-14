@@ -47,7 +47,7 @@ func NewLiveChatBot(input *LiveChatBotInput) *LiveChatBot {
 func readChat(service *youtube.Service, chatId string) <-chan *youtube.LiveChatMessage {
 
 	messageChannel := make(chan *youtube.LiveChatMessage)
-	const extraPercent float64 = 0.5
+	const extraPercent float64 = 0.1
 
 	// https://levelup.gitconnected.com/use-go-channels-as-promises-and-async-await-ee62d93078ec
 	go func(chatId string) {
