@@ -2,8 +2,8 @@ package ytbot
 
 import (
 	"context"
-	"log"
 	"fmt"
+	"log"
 	"time"
 
 	"google.golang.org/api/option"
@@ -60,7 +60,7 @@ func readChat(service *youtube.Service, chatId string) <-chan *youtube.LiveChatM
 			call := service.LiveChatMessages.List(chatId, []string{"snippet"})
 			response, err := call.Do()
 			if err != nil {
-				fmt.Println("Closing Channel: ",chatId," Error getting live chat messages:", err)
+				fmt.Println("Closing Channel: ", chatId, " Error getting live chat messages:", err)
 				break
 			}
 
@@ -83,20 +83,21 @@ func writeChat(service *youtube.Service, chatId string) chan<- string {
 
 	go func(chatId string) {
 		for newMessage := range messageChannel {
-			call := service.LiveChatMessages.Insert([]string{"snippet"}, &youtube.LiveChatMessage{
-				Snippet: &youtube.LiveChatMessageSnippet{
-					LiveChatId: chatId,
-					Type:       "textMessageEvent",
-					TextMessageDetails: &youtube.LiveChatTextMessageDetails{
-						MessageText: newMessage,
+			go func(newMessage string) {
+				call := service.LiveChatMessages.Insert([]string{"snippet"}, &youtube.LiveChatMessage{
+					Snippet: &youtube.LiveChatMessageSnippet{
+						LiveChatId: chatId,
+						Type:       "textMessageEvent",
+						TextMessageDetails: &youtube.LiveChatTextMessageDetails{
+							MessageText: newMessage,
+						},
 					},
-				},
-			})
-			_, err := call.Do()
-			if err != nil {
-				log.Fatalf("Error sending message: %v", err)
-				break
-			}
+				})
+				_, err := call.Do()
+				if err != nil {
+					fmt.Println("Error sending message: ", newMessage, " On Channel: ", chatId, " Error Was: ", err)
+				}
+			}(newMessage)
 		}
 	}(chatId)
 
@@ -126,8 +127,8 @@ func fetchChatIds(urls []string, service *youtube.Service) map[string]string {
 	}
 
 	// wait for all responses
-	chatIds := make(map[string]string) 
-	for _,url := range urls {
+	chatIds := make(map[string]string)
+	for _, url := range urls {
 		// chatIds = append(chatIds, <-responseChannel)
 		chatIds[url] = <-responseChannel
 	}
