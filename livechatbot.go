@@ -53,11 +53,12 @@ func readChat(service *youtube.Service, chatId string) <-chan *youtube.LiveChatM
 	go func(chatId string) {
 		defer close(messageChannel)
 
-		messageContainer := make(map[string]bool)
+		var nextPageToken string = "";
 
 		for {
 			// get live chats from chatId
 			call := service.LiveChatMessages.List(chatId, []string{"snippet", "authorDetails"})
+			call.PageToken(nextPageToken);
 			response, err := call.Do()
 			if err != nil {
 				fmt.Println("Closing Channel: ", chatId, " Error getting live chat messages:", err)
@@ -65,12 +66,10 @@ func readChat(service *youtube.Service, chatId string) <-chan *youtube.LiveChatM
 			}
 
 			for _, item := range response.Items {
-				if val := messageContainer[item.Id]; !val {
-					messageContainer[item.Id] = true
 					messageChannel <- item
-				}
 			}
-
+			nextPageToken = response.NextPageToken;
+			
 			time.Sleep(time.Millisecond * time.Duration((float64(response.PollingIntervalMillis) * (1 + extraPercent))))
 		}
 	}(chatId)
