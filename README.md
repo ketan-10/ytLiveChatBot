@@ -232,5 +232,7 @@ func main() {
 `go mod init github.com/ketan-10/combine-youtube-live-chat`
 `go mod tidy`
 
+- If `client-id` is compromised, an attacker can request use-data on your behalf, But the attacker will not be able to access actual user-data as he will just get `authorization code` after user login/consent NOT `access or refresh` token, for that hey have to exchange `authorization code` with `access/refresh token` which requires `client-secret`.
+- If `client-secret` and `client-id` is compromised, the attacker might be able to access user data, assuming we are using a web application, we have to register the `redirect url` as our on google API. so Google will send the `authorization-code` to only `redirect-url` so the user will be navigated to our site and not attacker site. But if the browser is also compromised that will cause an issue.
 
 
